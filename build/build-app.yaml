@@ -1,0 +1,32 @@
+parameters:
+    - name: targetproject
+      type: string
+      default: '**/*.sln'
+    - name: targetFramework
+      default: net6.0
+      type: string
+    - name: artifactName
+      default: 'drop'
+      type: string
+
+jobs:
+    - job: 'BuildApp'
+      displayName: 'Build App Artifact'
+      steps:
+
+        - task: DotNetCoreCLI@2
+          displayName: Build application
+          inputs:
+            command: publish
+            projects: ${{parameters.targetproject}}
+            arguments: "--configuration Release --framework ${{parameters.targetFramework}} --output $(Build.ArtifactStagingDirectory)/app --m:1"
+            modifyOutputPath: false
+            publishWebProjects: false
+            zipAfterPublish: True
+
+        - task: PublishBuildArtifacts@1
+          displayName: Publish application artifact
+          inputs:
+            PathtoPublish: "$(Build.ArtifactStagingDirectory)/app"
+            ArtifactName: ${{parameters.artifactName}}
+            publishLocation: Container

@@ -1,0 +1,23 @@
+parameters:
+    - name: artifactName
+      default: 'infrastructure'
+      type: string
+
+jobs:
+    - job: 'BuildInfra'
+      displayName: 'Build Infra Artificat'
+      steps:
+          
+        - task: CopyFiles@2
+          displayName: 'Copy Files to output'
+          inputs:
+            contents: |
+              **/infra/**
+            targetFolder: $(Build.ArtifactStagingDirectory)/infra
+
+        - task: PublishBuildArtifacts@1
+          displayName: Publish application artifact
+          inputs:
+            PathtoPublish: "$(Build.ArtifactStagingDirectory)/infra"
+            ArtifactName: ${{parameters.artifactName}}
+            publishLocation: Container

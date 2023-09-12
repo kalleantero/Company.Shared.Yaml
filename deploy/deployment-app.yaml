@@ -1,0 +1,32 @@
+parameters:
+  environmentName: string
+  artifactName: string
+  azureServiceConnectionName: string
+  appServiceName: string
+  appServiceStartupCommand: string
+  jobName: string
+  dependsOn: string
+  appType: string
+
+jobs:
+  - deployment: ${{parameters.jobName}}
+    displayName: Deploying ${{parameters.environmentName}} application
+    environment: ${{parameters.environmentName}}
+    dependsOn: ${{parameters.dependsOn}}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+            - download: current
+              artifact: ${{parameters.artifactName}} 
+                
+            - task: AzureWebApp@1
+              displayName: Deploy application
+              inputs:
+                azureSubscription: ${{parameters.azureServiceConnectionName}}
+                appType: ${{parameters.appType}}
+                appName: '${{parameters.appServiceName}}'
+                deployToSlotOrASE: false
+                package: '$(Pipeline.Workspace)/${{parameters.artifactName}}/*.zip'
+                startUpCommand: '${{parameters.appServiceStartupCommand}}'

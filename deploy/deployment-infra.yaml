@@ -1,0 +1,35 @@
+parameters:
+  environmentName: string
+  artifactName: string
+  azureServiceConnectionName: string
+  infraParameterFilePath: string
+  jobName: string
+
+jobs:
+
+- deployment:  ${{parameters.jobName}}
+  displayName: Deploying ${{parameters.environmentName}} infrastucture
+  environment: ${{parameters.environmentName}}
+  strategy:
+    runOnce:
+      preDeploy:
+        steps:
+          - download: current
+            artifact: ${{parameters.artifactName}} 
+            
+          - pwsh: $(Pipeline.Workspace)/${{parameters.artifactName}}/infra/scripts/predeploy.ps1
+
+      deploy:
+        steps:
+          - download: current
+            artifact: ${{parameters.artifactName}} 
+
+          - task: AzureCLI@2
+            displayName: Deploy infra
+            inputs:
+              azureSubscription: ${{parameters.azureServiceConnectionName}}
+              scriptType: bash
+              scriptLocation: inlineScript
+              useGlobalConfig: false
+              inlineScript: |
+                az deployment sub create --location westeurope --template-file $(Pipeline.Workspace)/${{parameters.artifactName}}/infra/main.bicep --parameters $(Pipeline.Workspace)/${{parameters.artifactName}}/infra/${{parameters.infraParameterFilePath}}

@@ -1,2 +1,1 @@
-# Company.Shared.Yaml
-Reusable YAML templates
+# Shared YAML-templates repository
